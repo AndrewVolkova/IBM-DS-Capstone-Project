@@ -1,7 +1,6 @@
 # Import required libraries
 import pandas as pd
 import dash
-# import dash_html_components as html
 from dash import html
 from dash import dcc
 
@@ -47,10 +46,10 @@ app.layout = html.Div(
         # dcc.RangeSlider(id='payload-slider',...)
         dcc.RangeSlider(
             id="payload-slider",
-            min=0,
-            max=10000,
+            min=min_payload,
+            max=max_payload,
             step=1000,
-            marks={0: "0", 100: "100"},
+            marks={0: "0", 2500: "2500", 5000: "5000", 7500: "7500", 10000: "10000"},
             value=[min_payload, max_payload],
         ),
         # TASK 4: Add a scatter chart to show the correlation between payload and launch success
@@ -95,26 +94,28 @@ def get_pie_chart(entered_site):
     ],
 )
 def get_scatter_chart(entered_site, payload):
-    filtered_df = spacex_df
+    filtered_df = spacex_df[
+        (spacex_df["Payload Mass (kg)"] >= payload[0]) &
+        (spacex_df["Payload Mass (kg)"] <= payload[1])
+    ]
     if entered_site == "ALL":
         fig = px.scatter(
             filtered_df,
             x="Payload Mass (kg)",
             y="class",
             color="Booster Version Category",
-            title="Correlation between Payload and Success for all Sites",
+            title="Correlation between Payload and Success for All Sites",
         )
-        return fig
     else:
-        filtered_df = spacex_df[spacex_df["Launch Site"] == entered_site]
+        filtered_df = filtered_df[filtered_df["Launch Site"] == entered_site]
         fig = px.scatter(
             filtered_df,
             x="Payload Mass (kg)",
             y="class",
             color="Booster Version Category",
-            title="Correlation between Payload and Success for all Sites",
+            title="Correlation between Payload and Success for Site " + entered_site,
         )
-        return fig
+    return fig
 
 
 # Run the app
